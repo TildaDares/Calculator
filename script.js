@@ -31,6 +31,9 @@ function mathOperationsKey(e) {
         operatorsDisabled = false;
     }
     if ((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57)) {
+        if (resultsBig.textContent.length > 20) {
+            return
+        }
         if (equalsHasBeenPressed) {
             resultsBig.textContent = e.key;
             equalsHasBeenPressed = false;
@@ -77,6 +80,9 @@ function mathOperationsClick(e) {
         operatorsDisabled = false;
     }
     if (e.target.classList.contains('numbers')) {
+        if (resultsBig.textContent.length > 20) {
+            return
+        }
         if (sqrtHasBeenPressed) {
             sqrtHasBeenPressed = false;
             /**if the squareroot, square, percent and 1/x buttons have been pressed and the expression is a compound expression
