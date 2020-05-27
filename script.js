@@ -49,6 +49,7 @@ function mathOperationsKey(e) {
         operationsContainer2 = resultsSmall.textContent.split(' ');
     }
     if (e.keyCode == 8) {
+        e.preventDefault();
         backspace();
     }
     if (e.keyCode == 46) {
