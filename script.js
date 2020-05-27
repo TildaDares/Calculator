@@ -6,13 +6,15 @@ setInterval(checkFontSize, 5);
 const buttons = document.querySelectorAll('button');
 const resultsBig = document.querySelector('.results-big');
 const resultsSmall = document.querySelector('.results-small');
+let smallFont = '1.5rem';
+let bigFont = '3rem';
+let errorMessageDivisionByZero = "You'll need the infinity stones for that :)";
+let errorMessageNegativeSquareRoot = "Bad Expression";
 let operationsContainer2;
 let multiPressedKeys = [];
 /**Tracks if the equals button has been pressed. If it has and the user presses a number
  *  Then the display changes to the key the user has pressed**/
 let equalsHasBeenPressed = false;
-//Tracks if the squareroot, square, percent and 1/x buttons have been pressed.//
-let sqrtHasBeenPressed = false;
 buttons.forEach(button => {
     button.addEventListener('click', mathOperationsClick);
 })
@@ -20,6 +22,8 @@ buttons.forEach(button => {
 function mathOperationsKey(e) {
     let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
         resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
+    let checkErrors = (resultsBig.textContent == errorMessageNegativeSquareRoot || resultsBig.textContent == "Infinity" ||
+        resultsBig.textContent == errorMessageDivisionByZero || resultsBig.textContent == "NaN");
     multiPressedKeys.push(e.keyCode); //Just a hack. Could cause potential problems
     if (!(e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 27)) {
         const highlight = document.querySelector(`button[data-key="${e.key}"]`);
@@ -27,8 +31,7 @@ function mathOperationsKey(e) {
         setTimeout(function() { highlight.classList.remove('button-active'); }, 100)
     }
     resultsBig.style.color = 'white';
-    if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
-        resultsBig.textContent == "You'll need the infinity stones for that :)") {
+    if (checkErrors) {
         if (!((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57))) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
@@ -43,14 +46,7 @@ function mathOperationsKey(e) {
         return
     }
     if ((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57)) {
-        if (resultsBig.textContent.length > 20) return
-        if (equalsHasBeenPressed) {
-            resultsBig.textContent = e.key;
-            equalsHasBeenPressed = false;
-            return
-        }
-        if (resultsBig.textContent == '0') resultsBig.textContent = e.key;
-        else resultsBig.textContent = resultsBig.textContent + e.key;
+        numbersButtons(e.key)
     }
     if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173 || e.keyCode == 191) {
         operator = e.key;
@@ -59,8 +55,6 @@ function mathOperationsKey(e) {
     }
     if (e.keyCode == 8) {
         e.preventDefault();
-        let checkErrors = (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
-            resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN");
         backspace(checkErrors);
     }
     nonMathButtons(e.keyCode)
@@ -82,12 +76,29 @@ function nonMathButtons(keyCode) {
     }
 }
 
+function numbersButtons(key) {
+    if (resultsBig.textContent.length > 20) return
+    if (equalsHasBeenPressed) {
+        resultsBig.textContent = key;
+        equalsHasBeenPressed = false;
+        return
+    }
+    if (resultsBig.textContent == '0') {
+        resultsBig.textContent = key;
+        return
+    } else {
+        resultsBig.textContent = resultsBig.textContent + key;
+        return
+    }
+}
+
 function mathOperationsClick(e) {
     let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
         resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
+    let checkErrors = (resultsBig.textContent == errorMessageNegativeSquareRoot || resultsBig.textContent == "Infinity" ||
+        resultsBig.textContent == errorMessageDivisionByZero || resultsBig.textContent == "NaN");
     resultsBig.style.color = 'white';
-    if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
-        resultsBig.textContent == "You'll need the infinity stones for that :)") {
+    if (checkErrors) {
         if (!e.target.classList.contains('numbers')) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
@@ -98,28 +109,7 @@ function mathOperationsClick(e) {
         }
     }
     if (e.target.classList.contains('numbers')) {
-        if (resultsBig.textContent.length > 20) return
-        if (sqrtHasBeenPressed) {
-            sqrtHasBeenPressed = false;
-            /**if the squareroot, square, percent and 1/x buttons have been pressed and the expression is a compound expression
-             * then the small display doesn't clear but if it's not a compound expression the small display clears 
-             */
-            if (compExp) {
-                resultsBig.textContent = e.target.textContent;
-                return
-            } else {
-                resultsSmall.textContent = "";
-                resultsBig.textContent = e.target.textContent;
-            }
-            return
-        }
-        if (equalsHasBeenPressed) {
-            resultsBig.textContent = e.target.textContent;
-            equalsHasBeenPressed = false;
-            return
-        }
-        if (resultsBig.textContent == '0') resultsBig.textContent = e.target.textContent;
-        else resultsBig.textContent = resultsBig.textContent + e.target.textContent;
+        numbersButtons(e.target.textContent);
     }
     if (e.target.classList.contains('operators')) {
         if (e.target.classList.contains('multiply')) operator = '*';
@@ -130,8 +120,6 @@ function mathOperationsClick(e) {
         operationsContainer2 = resultsSmall.textContent.split(' ');
     }
     if (e.target.classList.contains('clearone')) {
-        let checkErrors = (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
-            resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN");
         backspace(checkErrors);
     }
     if (e.target.classList.contains('clear-textbox')) {
@@ -151,18 +139,17 @@ function mathOperationsClick(e) {
         percent(compExp);
     }
     if (e.target.classList.contains('sqrt')) {
-        sqrtHasBeenPressed = true;
+        equalsHasBeenPressed = false;
         if (Number(resultsBig.textContent) < 0) {
-            resultsBig.style.fontSize = '1.5rem';
+            resultsBig.style.fontSize = smallFont;
             resultsBig.style.color = 'red';
-            resultsBig.textContent = "Bad Expression";
+            resultsBig.textContent = errorMessageNegativeSquareRoot;
             resultsSmall.textContent = "";
-            sqrtHasBeenPressed = false;
             return
         }
         let result = Math.sqrt(Number(resultsBig.textContent));
         if (result.toString().length > 6) {
-            resultsBig.style.fontSize = '1.5rem'
+            resultsBig.style.fontSize = smallFont
         }
         if (compExp) {
             resultsBig.textContent = result;
@@ -172,10 +159,9 @@ function mathOperationsClick(e) {
         resultsBig.textContent = result;
     }
     if (e.target.classList.contains('square')) {
-        sqrtHasBeenPressed = true;
         let result = Math.pow((Number(resultsBig.textContent)), 2);
         if (result.toString().length > 9) {
-            resultsBig.style.fontSize = '1.5rem'
+            resultsBig.style.fontSize = smallFont
         }
         if (compExp) {
             resultsBig.textContent = result;
@@ -185,16 +171,14 @@ function mathOperationsClick(e) {
         resultsBig.textContent = result;
     }
     if (e.target.classList.contains('one-over')) {
-        sqrtHasBeenPressed = true;
+        equalsHasBeenPressed = false;
         if (Number(resultsBig.textContent) == '0') {
-            resultsBig.style.fontSize = '1.5rem'
-            resultsBig.textContent = "You'll need the infinity stones for that :)";
-            resultsSmall.textContent = "";
+            errorMessage();
             return
         }
         let result = 1 / (Number(resultsBig.textContent));
         if (result.toString().length > 9) {
-            resultsBig.style.fontSize = '1.5rem'
+            resultsBig.style.fontSize = smallFont
         }
         if (compExp) {
             resultsBig.textContent = result;
@@ -245,21 +229,26 @@ function dotOperator() {
 }
 
 function percent(compExp) {
-    sqrtHasBeenPressed = true;
     if (resultsBig.textContent == '0') {
         resultsBig.textContent = "0";
         return
     }
     let result = Number(resultsBig.textContent) / 100;
     if (result.toString().length > 9) {
-        resultsBig.style.fontSize = '1.5rem';
-    } else resultsBig.style.fontSize = '3rem';
+        resultsBig.style.fontSize = smallFont;
+    } else resultsBig.style.fontSize = bigFont;
     if (compExp) {
         resultsBig.textContent = result;
         return
     }
     resultsSmall.textContent = "";
     resultsBig.textContent = result;
+}
+
+function errorMessage() {
+    resultsBig.style.fontSize = smallFont;
+    resultsBig.textContent = errorMessageDivisionByZero;
+    resultsSmall.textContent = "";
 }
 
 function equalsButton() {
@@ -279,9 +268,7 @@ function equalsButton() {
                 if (operationsContainer2[i] == '/') {
                     const index = i;
                     if (operationsContainer2[index + 1] === '0') { //Checks if a number is being divided by 0
-                        resultsBig.style.fontSize = '1.5rem'
-                        resultsBig.textContent = "You'll need the infinity stones for that :)";
-                        resultsSmall.textContent = "";
+                        errorMessage();
                         return
                     }
                     let num1 = Number(operationsContainer2[index - 1]);
@@ -326,7 +313,7 @@ function equalsButton() {
         }
     }
     if (operationsContainer2.join('').length > 9) { //If the display length is greater than 6 then reduce the font-size of the display
-        resultsBig.style.fontSize = '1.5rem'
+        resultsBig.style.fontSize = smallFont
     }
     resultsBig.textContent = operationsContainer2.join('');
     resultsSmall.textContent = "";
@@ -334,8 +321,8 @@ function equalsButton() {
 
 function checkFontSize() { //Checks at intervals to adjust the font-size if the length of the display is too long
     if (resultsBig.textContent.length > 9) {
-        resultsBig.style.fontSize = '1.5rem';
-    } else resultsBig.style.fontSize = '3rem';
+        resultsBig.style.fontSize = smallFont;
+    } else resultsBig.style.fontSize = bigFont;
 }
 
 window.addEventListener('keydown', mathOperationsKey);
