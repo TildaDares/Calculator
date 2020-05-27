@@ -209,16 +209,7 @@ function concatOperators(operator, operationsContainer2) {
         resultsSmall.textContent = lastOperator.join('') + "" + operator;
         return
     }
-    if (operator == '*') {
-        resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
-        resultsBig.textContent = "0";
-    } else if (operator == '+') {
-        resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
-        resultsBig.textContent = "0";
-    } else if (operator == '-') {
-        resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
-        resultsBig.textContent = "0";
-    } else if (operator == '/') {
+    if (operator == '*' || operator == '+' || operator == '-' || operator == '/') {
         resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
         resultsBig.textContent = "0";
     }
