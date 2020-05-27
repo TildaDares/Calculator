@@ -32,9 +32,10 @@ function mathOperationsKey(e) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
             return
+        } else {
+            resultsBig.textContent = e.key;
+            return
         }
-        resultsBig.textContent = e.key;
-        resultsSmall.textContent = "";
     }
     if (resultsBig.textContent == '.') {
         operatorsDisabled = true;
@@ -46,9 +47,7 @@ function mathOperationsKey(e) {
         return
     }
     if ((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57)) {
-        if (resultsBig.textContent.length > 20) {
-            return
-        }
+        if (resultsBig.textContent.length > 20) return
         if (equalsHasBeenPressed) {
             resultsBig.textContent = e.key;
             equalsHasBeenPressed = false;
@@ -196,7 +195,6 @@ function mathOperationsClick(e) {
             resultsBig.textContent = "You'll need the infinity stones for that :)";
             resultsSmall.textContent = "";
             return
-
         }
         let result = 1 / (Number(resultsBig.textContent));
         if (result.toString().length > 9) {
