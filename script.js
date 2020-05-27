@@ -13,7 +13,6 @@ let multiPressedKeys = [];
 let equalsHasBeenPressed = false;
 //Tracks if the squareroot, square, percent and 1/x buttons have been pressed.//
 let sqrtHasBeenPressed = false;
-let operatorsDisabled = false; //Disables the operators when the display only has a dot operator in it to prevent bad expressions
 buttons.forEach(button => {
     button.addEventListener('click', mathOperationsClick);
 })
@@ -22,9 +21,11 @@ function mathOperationsKey(e) {
     let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
         resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
     multiPressedKeys.push(e.keyCode); //Just a hack. Could cause potential problems
-    const highlight = document.querySelector(`button[data-key="${e.key}"]`);
-    highlight.classList.add('button-active');
-    setTimeout(function() { highlight.classList.remove('button-active'); }, 100)
+    if (!(e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 27)) {
+        const highlight = document.querySelector(`button[data-key="${e.key}"]`);
+        highlight.classList.add('button-active');
+        setTimeout(function() { highlight.classList.remove('button-active'); }, 100)
+    }
     resultsBig.style.color = 'white';
     if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == "You'll need the infinity stones for that :)") {
@@ -36,11 +37,6 @@ function mathOperationsKey(e) {
             resultsBig.textContent = e.key;
             return
         }
-    }
-    if (resultsBig.textContent == '.') {
-        operatorsDisabled = true;
-    } else {
-        operatorsDisabled = false;
     }
     if (multiPressedKeys[multiPressedKeys.length - 2] == 16 && e.keyCode == 53) {
         percent(compExp);
@@ -57,7 +53,6 @@ function mathOperationsKey(e) {
         else resultsBig.textContent = resultsBig.textContent + e.key;
     }
     if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173 || e.keyCode == 191) {
-        if (operatorsDisabled) return
         operator = e.key;
         concatOperators(operator, operationsContainer2)
         operationsContainer2 = resultsSmall.textContent.split(' ');
@@ -68,17 +63,21 @@ function mathOperationsKey(e) {
             resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN");
         backspace(checkErrors);
     }
-    if (e.keyCode == 46) {
+    nonMathButtons(e.keyCode)
+}
+
+function nonMathButtons(keyCode) {
+    if (keyCode == 46) {
         resultsBig.textContent = "0";
     }
-    if (e.keyCode == 27) {
+    if (keyCode == 27) {
         resultsBig.textContent = "0";
         resultsSmall.textContent = "";
     }
-    if (e.keyCode == 110 || e.keyCode == 190) {
+    if (keyCode == 110 || keyCode == 190) {
         dotOperator();
     }
-    if (e.keyCode == 61) {
+    if (keyCode == 61) {
         equalsButton();
     }
 }
@@ -93,12 +92,10 @@ function mathOperationsClick(e) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
             return
+        } else {
+            resultsBig.textContent = e.target.textContent;
+            return
         }
-    }
-    if (resultsBig.textContent == '.') {
-        operatorsDisabled = true;
-    } else {
-        operatorsDisabled = false;
     }
     if (e.target.classList.contains('numbers')) {
         if (resultsBig.textContent.length > 20) return
@@ -125,7 +122,6 @@ function mathOperationsClick(e) {
         else resultsBig.textContent = resultsBig.textContent + e.target.textContent;
     }
     if (e.target.classList.contains('operators')) {
-        if (operatorsDisabled) return
         if (e.target.classList.contains('multiply')) operator = '*';
         else if (e.target.classList.contains('plus')) operator = '+';
         else if (e.target.classList.contains('minus')) operator = '-';
@@ -228,12 +224,7 @@ function concatOperators(operator, operationsContainer2) {
 }
 
 function backspace(checkErrors) {
-    if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
-        resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN") {
-        resultsBig.textContent = '0';
-        return
-    }
-    if (resultsBig.textContent.length == 1) {
+    if (resultsBig.textContent.length == 1 || checkErrors) {
         resultsBig.textContent = '0';
         return
     }
@@ -272,7 +263,6 @@ function percent(compExp) {
 }
 
 function equalsButton() {
-    if (operatorsDisabled) return
     equalsHasBeenPressed = true;
     /**operationsContainer2 stores the contents of the small array as soon as an operator is ended
      * There is a space after an operator which makes it easier to evaluate complex expressions.
