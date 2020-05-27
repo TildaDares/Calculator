@@ -1,6 +1,5 @@
 /**Bugs to fix 
  * Round the numbers when they have too many trailing decimal numbers
- * Make the calculator buttons get highlighted when i use a keyboard press
  * Make the keydown event work even when there's no clicking inside the window
  */
 setInterval(checkFontSize, 5);
@@ -8,6 +7,7 @@ const buttons = document.querySelectorAll('button');
 const resultsBig = document.querySelector('.results-big');
 const resultsSmall = document.querySelector('.results-small');
 let operationsContainer2;
+let multiPressedKeys = [];
 /**Tracks if the equals button has been pressed. If it has and the user presses a number
  *  Then the display changes to the key the user has pressed**/
 let equalsHasBeenPressed = false;
@@ -19,9 +19,20 @@ buttons.forEach(button => {
 })
 
 function mathOperationsKey(e) {
+    let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
+        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
+    multiPressedKeys.push(e.keyCode); //Just a hack. Could cause potential problems
+    const highlight = document.querySelector(`button[data-key="${e.key}"]`);
+    highlight.classList.add('button-active');
+    setTimeout(function() { highlight.classList.remove('button-active'); }, 100)
     resultsBig.style.color = 'white';
     if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == "You'll need the infinity stones for that :)") {
+        if (!((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57))) {
+            resultsBig.textContent = '0';
+            resultsSmall.textContent = "";
+            return
+        }
         resultsBig.textContent = e.key;
         resultsSmall.textContent = "";
     }
@@ -29,6 +40,10 @@ function mathOperationsKey(e) {
         operatorsDisabled = true;
     } else {
         operatorsDisabled = false;
+    }
+    if (multiPressedKeys[multiPressedKeys.length - 2] == 16 && e.keyCode == 53) {
+        percent(compExp);
+        return
     }
     if ((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57)) {
         if (resultsBig.textContent.length > 20) {
@@ -42,7 +57,7 @@ function mathOperationsKey(e) {
         if (resultsBig.textContent == '0') resultsBig.textContent = e.key;
         else resultsBig.textContent = resultsBig.textContent + e.key;
     }
-    if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173) {
+    if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173 || e.keyCode == 191) {
         if (operatorsDisabled) return
         operator = e.key;
         concatOperators(operator, operationsContainer2)
@@ -50,7 +65,9 @@ function mathOperationsKey(e) {
     }
     if (e.keyCode == 8) {
         e.preventDefault();
-        backspace();
+        let checkErrors = (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
+            resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN");
+        backspace(checkErrors);
     }
     if (e.keyCode == 46) {
         resultsBig.textContent = "0";
@@ -59,7 +76,7 @@ function mathOperationsKey(e) {
         resultsBig.textContent = "0";
         resultsSmall.textContent = "";
     }
-    if (e.keyCode == 110) {
+    if (e.keyCode == 110 || e.keyCode == 190) {
         dotOperator();
     }
     if (e.keyCode == 61) {
@@ -68,29 +85,30 @@ function mathOperationsKey(e) {
 }
 
 function mathOperationsClick(e) {
+    let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
+        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
     resultsBig.style.color = 'white';
     if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == "You'll need the infinity stones for that :)") {
-        resultsBig.textContent = e.target.textContent;
-        resultsSmall.textContent = "";
+        if (!e.target.classList.contains('numbers')) {
+            resultsBig.textContent = '0';
+            resultsSmall.textContent = "";
+            return
+        }
     }
-
     if (resultsBig.textContent == '.') {
         operatorsDisabled = true;
     } else {
         operatorsDisabled = false;
     }
     if (e.target.classList.contains('numbers')) {
-        if (resultsBig.textContent.length > 20) {
-            return
-        }
+        if (resultsBig.textContent.length > 20) return
         if (sqrtHasBeenPressed) {
             sqrtHasBeenPressed = false;
             /**if the squareroot, square, percent and 1/x buttons have been pressed and the expression is a compound expression
              * then the small display doesn't clear but if it's not a compound expression the small display clears 
              */
-            if (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-                resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*')) {
+            if (compExp) {
                 resultsBig.textContent = e.target.textContent;
                 return
             } else {
@@ -117,7 +135,9 @@ function mathOperationsClick(e) {
         operationsContainer2 = resultsSmall.textContent.split(' ');
     }
     if (e.target.classList.contains('clearone')) {
-        backspace();
+        let checkErrors = (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
+            resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN");
+        backspace(checkErrors);
     }
     if (e.target.classList.contains('clear-textbox')) {
         resultsBig.textContent = "0";
@@ -133,18 +153,7 @@ function mathOperationsClick(e) {
         equalsButton();
     }
     if (e.target.classList.contains('percent')) {
-        sqrtHasBeenPressed = true;
-        let result = Number(resultsBig.textContent) / 100;
-        if (result.toString().length > 6) {
-            resultsBig.style.fontSize = '1.5rem';
-        } else resultsBig.style.fontSize = '3rem';
-        if (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-            resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*')) {
-            resultsBig.textContent = result;
-            return
-        }
-        resultsSmall.textContent = "";
-        resultsBig.textContent = result;
+        percent(compExp);
     }
     if (e.target.classList.contains('sqrt')) {
         sqrtHasBeenPressed = true;
@@ -160,8 +169,7 @@ function mathOperationsClick(e) {
         if (result.toString().length > 6) {
             resultsBig.style.fontSize = '1.5rem'
         }
-        if (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-            resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*')) {
+        if (compExp) {
             resultsBig.textContent = result;
             return
         }
@@ -171,11 +179,10 @@ function mathOperationsClick(e) {
     if (e.target.classList.contains('square')) {
         sqrtHasBeenPressed = true;
         let result = Math.pow((Number(resultsBig.textContent)), 2);
-        if (result.toString().length > 6) {
+        if (result.toString().length > 9) {
             resultsBig.style.fontSize = '1.5rem'
         }
-        if (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-            resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*')) {
+        if (compExp) {
             resultsBig.textContent = result;
             return
         }
@@ -184,12 +191,18 @@ function mathOperationsClick(e) {
     }
     if (e.target.classList.contains('one-over')) {
         sqrtHasBeenPressed = true;
+        if (Number(resultsBig.textContent) == '0') {
+            resultsBig.style.fontSize = '1.5rem'
+            resultsBig.textContent = "You'll need the infinity stones for that :)";
+            resultsSmall.textContent = "";
+            return
+
+        }
         let result = 1 / (Number(resultsBig.textContent));
-        if (result.toString().length > 6) {
+        if (result.toString().length > 9) {
             resultsBig.style.fontSize = '1.5rem'
         }
-        if (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-            resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*')) {
+        if (compExp) {
             resultsBig.textContent = result;
             return
         }
@@ -216,7 +229,12 @@ function concatOperators(operator, operationsContainer2) {
     operationsContainer2 = resultsSmall.textContent.split(' ');
 }
 
-function backspace() {
+function backspace(checkErrors) {
+    if (resultsBig.textContent == "Bad Expression" || resultsBig.textContent == "Infinity" ||
+        resultsBig.textContent == "You'll need the infinity stones for that :)" || resultsBig.textContent == "NaN") {
+        resultsBig.textContent = '0';
+        return
+    }
     if (resultsBig.textContent.length == 1) {
         resultsBig.textContent = '0';
         return
@@ -237,6 +255,24 @@ function dotOperator() {
     resultsBig.textContent = resultsBig.textContent + ".";
 }
 
+function percent(compExp) {
+    sqrtHasBeenPressed = true;
+    if (resultsBig.textContent == '0') {
+        resultsBig.textContent = "0";
+        return
+    }
+    let result = Number(resultsBig.textContent) / 100;
+    if (result.toString().length > 9) {
+        resultsBig.style.fontSize = '1.5rem';
+    } else resultsBig.style.fontSize = '3rem';
+    if (compExp) {
+        resultsBig.textContent = result;
+        return
+    }
+    resultsSmall.textContent = "";
+    resultsBig.textContent = result;
+}
+
 function equalsButton() {
     if (operatorsDisabled) return
     equalsHasBeenPressed = true;
@@ -255,7 +291,7 @@ function equalsButton() {
                 if (operationsContainer2[i] == '/') {
                     const index = i;
                     if (operationsContainer2[index + 1] === '0') { //Checks if a number is being divided by 0
-                        resultsBig.style.fontSize = '1.2rem';
+                        resultsBig.style.fontSize = '1.5rem'
                         resultsBig.textContent = "You'll need the infinity stones for that :)";
                         resultsSmall.textContent = "";
                         return
@@ -301,7 +337,7 @@ function equalsButton() {
             }
         }
     }
-    if (operationsContainer2.join('').length > 6) { //If the display length is greater than 6 then reduce the font-size of the display
+    if (operationsContainer2.join('').length > 9) { //If the display length is greater than 6 then reduce the font-size of the display
         resultsBig.style.fontSize = '1.5rem'
     }
     resultsBig.textContent = operationsContainer2.join('');
@@ -309,8 +345,9 @@ function equalsButton() {
 }
 
 function checkFontSize() { //Checks at intervals to adjust the font-size if the length of the display is too long
-    if (resultsBig.textContent.length > 6) {
+    if (resultsBig.textContent.length > 9) {
         resultsBig.style.fontSize = '1.5rem';
     } else resultsBig.style.fontSize = '3rem';
 }
+
 window.addEventListener('keydown', mathOperationsKey);

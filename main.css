@@ -14,11 +14,13 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: row;
+    overflow-y: auto;
 }
 
 .calculator-body {
     width: 100%;
-    height: 600px;
+    height: 70vh;
+    margin-bottom: 10px;
 }
 
 .results-small {
@@ -65,7 +67,7 @@ button:active {
 
 .buttons {
     width: 100%;
-    height: 350px;
+    height: 470px;
     display: grid;
     grid-template-columns: repeat(4, auto);
     column-gap: 5px;
@@ -83,6 +85,20 @@ button:active {
     border: hidden;
     color: white;
     outline: none;
+}
+
+.button-active {
+    animation-name: active;
+    animation-duration: 0.5s;
+}
+
+@keyframes active {
+    0% {
+        background: #333;
+    }
+    100% {
+        background: rgba(255, 255, 255, 0.315);
+    }
 }
 
 .otherbuttons {
@@ -112,7 +128,7 @@ button:active {
 
 @media(min-width: 1000px) {
     .calculator-body {
-        width: 30%;
+        width: 50%;
         height: 500px;
     }
 }
