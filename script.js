@@ -14,6 +14,7 @@ let codeset = {
 };
 let smallFont = '1.5rem';
 let bigFont = '3rem';
+let operationsContainer2;
 let errorMessageDivisionByZero = "You'll need the infinity stones for that :)";
 let errorMessageNegativeSquareRoot = "Bad Expression";
 let multiPressedKeys = [];
