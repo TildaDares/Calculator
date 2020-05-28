@@ -6,12 +6,18 @@ setInterval(checkFontSize, 5);
 const buttons = document.querySelectorAll('button');
 const resultsBig = document.querySelector('.results-big');
 const resultsSmall = document.querySelector('.results-small');
+let codeset = {
+    16: false,
+    53: false,
+    8: false,
+    187: false
+};
 let smallFont = '1.5rem';
 let bigFont = '3rem';
 let errorMessageDivisionByZero = "You'll need the infinity stones for that :)";
 let errorMessageNegativeSquareRoot = "Bad Expression";
-let operationsContainer2;
 let multiPressedKeys = [];
+let highlightAbleKeys = ["*", "-", "/", "+", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "%", "Escape", "Backspace", "Delete", "."];
 /**Tracks if the equals button has been pressed. If it has and the user presses a number
  *  Then the display changes to the key the user has pressed**/
 let equalsHasBeenPressed = false;
@@ -20,15 +26,20 @@ buttons.forEach(button => {
 })
 
 function mathOperationsKey(e) {
-    let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
+    let compExp = (resultsSmall.textContent.split('').includes('÷') || resultsSmall.textContent.split('').includes('+') ||
+        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('x'));
     let checkErrors = (resultsBig.textContent == errorMessageNegativeSquareRoot || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == errorMessageDivisionByZero || resultsBig.textContent == "NaN");
     multiPressedKeys.push(e.keyCode); //Just a hack. Could cause potential problems
-    if (!(e.keyCode == 8 || e.keyCode == 46 || e.keyCode == 27)) {
+    if (e.key == 'Enter') {
+        const enterKey = document.querySelector(`button[id="${e.key}"]`);
+        enterKey.classList.add('button-active');
+        setTimeout(function() { enterKey.classList.remove('button-active'); }, 100);
+    }
+    if (highlightAbleKeys.includes(e.key)) {
         const highlight = document.querySelector(`button[data-key="${e.key}"]`);
         highlight.classList.add('button-active');
-        setTimeout(function() { highlight.classList.remove('button-active'); }, 100)
+        setTimeout(function() { highlight.classList.remove('button-active'); }, 100);
     }
     resultsBig.style.color = 'white';
     if (checkErrors) {
@@ -49,7 +60,9 @@ function mathOperationsKey(e) {
         numbersButtons(e.key)
     }
     if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173 || e.keyCode == 191) {
-        operator = e.key;
+        if (e.key == '/') operator = '÷';
+        else if (e.key == '*') operator = 'x';
+        else operator = e.key;
         concatOperators(operator, operationsContainer2)
         operationsContainer2 = resultsSmall.textContent.split(' ');
     }
@@ -71,7 +84,7 @@ function nonMathButtons(keyCode) {
     if (keyCode == 110 || keyCode == 190) {
         dotOperator();
     }
-    if (keyCode == 61) {
+    if (keyCode == 61 || keyCode == 13) {
         equalsButton();
     }
 }
@@ -93,8 +106,8 @@ function numbersButtons(key) {
 }
 
 function mathOperationsClick(e) {
-    let compExp = (resultsSmall.textContent.split('').includes('/') || resultsSmall.textContent.split('').includes('+') ||
-        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('*'));
+    let compExp = (resultsSmall.textContent.split('').includes('÷') || resultsSmall.textContent.split('').includes('+') ||
+        resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('x'));
     let checkErrors = (resultsBig.textContent == errorMessageNegativeSquareRoot || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == errorMessageDivisionByZero || resultsBig.textContent == "NaN");
     resultsBig.style.color = 'white';
@@ -112,10 +125,10 @@ function mathOperationsClick(e) {
         numbersButtons(e.target.textContent);
     }
     if (e.target.classList.contains('operators')) {
-        if (e.target.classList.contains('multiply')) operator = '*';
+        if (e.target.classList.contains('multiply')) operator = 'x';
         else if (e.target.classList.contains('plus')) operator = '+';
         else if (e.target.classList.contains('minus')) operator = '-';
-        else if (e.target.classList.contains('buttondivide')) operator = '/';
+        else if (e.target.classList.contains('buttondivide')) operator = '÷';
         concatOperators(operator, operationsContainer2)
         operationsContainer2 = resultsSmall.textContent.split(' ');
     }
@@ -200,7 +213,7 @@ function concatOperators(operator, operationsContainer2) {
         resultsSmall.textContent = lastOperator.join('') + "" + operator;
         return
     }
-    if (operator == '*' || operator == '+' || operator == '-' || operator == '/') {
+    if (operator == 'x' || operator == '+' || operator == '-' || operator == '÷') {
         resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
         resultsBig.textContent = "0";
     }
@@ -263,9 +276,9 @@ function equalsButton() {
     resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent;
     for (let i = 0; i < operationsContainer2.length; i++) { //This outer for loop makes sure no operator was skipped during the execution of the operations
         //Follows PEMDAS
-        if (operationsContainer2.includes('/')) {
+        if (operationsContainer2.includes('÷')) {
             for (let i = 0; i < operationsContainer2.length; i++) {
-                if (operationsContainer2[i] == '/') {
+                if (operationsContainer2[i] == '÷') {
                     const index = i;
                     if (operationsContainer2[index + 1] === '0') { //Checks if a number is being divided by 0
                         errorMessage();
@@ -278,9 +291,9 @@ function equalsButton() {
                 }
             }
         }
-        if (operationsContainer2.includes('*')) {
+        if (operationsContainer2.includes('x')) {
             for (let i = 0; i < operationsContainer2.length; i++) {
-                if (operationsContainer2[i] === '*') {
+                if (operationsContainer2[i] === 'x') {
                     const index = i;
                     let num1 = Number(operationsContainer2[index - 1]);
                     let num2 = Number(operationsContainer2[index + 1]);
