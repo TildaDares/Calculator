@@ -221,7 +221,6 @@ function mathOperationsClick(e) {
 }
 
 function concatOperators(operator) {
-    //  console.log(operator);
     /**Checks if the display is empty when the operator buttons were pressed
      * If they are the if statement then changes the last operator in the small display
      * and replaces it with the new operator that was pressed
@@ -234,7 +233,6 @@ function concatOperators(operator) {
     }
     if (operator == 'x' || operator == '+' || operator == '-' || operator == '÷') {
         resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
-        console.log(resultsSmall.textContent);
         resultsBig.textContent = "0";
     }
 }
