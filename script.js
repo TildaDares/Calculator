@@ -9,19 +9,20 @@ const resultsSmall = document.querySelector('.results-small');
 let codeset = {
     16: false,
     53: false,
-    8: false,
-    187: false
+    61: false,
+    42: false
 };
 let smallFont = '1.5rem';
 let bigFont = '3rem';
 let operationsContainer2;
 let errorMessageDivisionByZero = "You'll need the infinity stones for that :)";
 let errorMessageNegativeSquareRoot = "Bad Expression";
-let multiPressedKeys = [];
+let numberKeys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
 let highlightAbleKeys = ["*", "-", "/", "+", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "%", "Escape", "Backspace", "Delete", "."];
 /**Tracks if the equals button has been pressed. If it has and the user presses a number
  *  Then the display changes to the key the user has pressed**/
 let equalsHasBeenPressed = false;
+let otherMathOperatorsClicked = false; //Tracks if the other non-basic operators have been clicked
 buttons.forEach(button => {
     button.addEventListener('click', mathOperationsClick);
 })
@@ -31,7 +32,6 @@ function mathOperationsKey(e) {
         resultsSmall.textContent.split('').includes('-') || resultsSmall.textContent.split('').includes('x'));
     let checkErrors = (resultsBig.textContent == errorMessageNegativeSquareRoot || resultsBig.textContent == "Infinity" ||
         resultsBig.textContent == errorMessageDivisionByZero || resultsBig.textContent == "NaN");
-    multiPressedKeys.push(e.keyCode); //Just a hack. Could cause potential problems
     if (e.key == 'Enter') {
         const enterKey = document.querySelector(`button[id="${e.key}"]`);
         enterKey.classList.add('button-active');
@@ -44,54 +44,69 @@ function mathOperationsKey(e) {
     }
     resultsBig.style.color = 'white';
     if (checkErrors) {
-        if (!((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57))) {
+        if (!numberKeys.includes(e.key)) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
             return
         } else {
             resultsBig.textContent = e.key;
+            otherMathOperatorsClicked = false;
             return
         }
     }
-    if (multiPressedKeys[multiPressedKeys.length - 2] == 16 && e.keyCode == 53) {
+    if (e.key == '%') {
         percent(compExp);
         return
     }
-    if ((e.keyCode >= 96 && e.keyCode <= 105) || (e.keyCode >= 48 && e.keyCode <= 57)) {
+    if (numberKeys.includes(e.key)) {
         numbersButtons(e.key)
     }
-    if ((e.keyCode >= 106 && e.keyCode <= 109) || e.keyCode == 111 || e.keyCode == 173 || e.keyCode == 191) {
-        if (e.key == '/') operator = '÷';
-        else if (e.key == '*') operator = 'x';
-        else operator = e.key;
-        concatOperators(operator, operationsContainer2)
-        operationsContainer2 = resultsSmall.textContent.split(' ');
+    if (e.key == '+' || e.key == '*' || e.key == '/' || e.key == '-') {
+        switch (e.key) {
+            case '/':
+                operator = '÷';
+                break;
+
+            case '*':
+                operator = 'x';
+                break;
+
+            default:
+                operator = e.key;
+                break;
+        }
+        concatOperators(operator);
     }
-    if (e.keyCode == 8) {
+    if (e.key == 'Backspace') {
         e.preventDefault();
         backspace(checkErrors);
     }
-    nonMathButtons(e.keyCode)
+    nonMathButtons(e.key)
 }
 
-function nonMathButtons(keyCode) {
-    if (keyCode == 46) {
+function nonMathButtons(key) {
+    if (key == 'Delete') {
         resultsBig.textContent = "0";
     }
-    if (keyCode == 27) {
+    if (key == 'Escape') {
         resultsBig.textContent = "0";
         resultsSmall.textContent = "";
     }
-    if (keyCode == 110 || keyCode == 190) {
+    if (key == '.') {
         dotOperator();
     }
-    if (keyCode == 61 || keyCode == 13) {
+    if (key == 'Enter' || key == '=') {
         equalsButton();
     }
 }
 
-function numbersButtons(key) {
+function numbersButtons(key, checkErrors) {
     if (resultsBig.textContent.length > 20) return
+    if (otherMathOperatorsClicked) {
+        resultsBig.textContent = key;
+        otherMathOperatorsClicked = false;
+        return
+    }
     if (equalsHasBeenPressed) {
         resultsBig.textContent = key;
         equalsHasBeenPressed = false;
@@ -130,8 +145,7 @@ function mathOperationsClick(e) {
         else if (e.target.classList.contains('plus')) operator = '+';
         else if (e.target.classList.contains('minus')) operator = '-';
         else if (e.target.classList.contains('buttondivide')) operator = '÷';
-        concatOperators(operator, operationsContainer2)
-        operationsContainer2 = resultsSmall.textContent.split(' ');
+        concatOperators(operator);
     }
     if (e.target.classList.contains('clearone')) {
         backspace(checkErrors);
@@ -154,6 +168,7 @@ function mathOperationsClick(e) {
     }
     if (e.target.classList.contains('sqrt')) {
         equalsHasBeenPressed = false;
+        otherMathOperatorsClicked = true;
         if (Number(resultsBig.textContent) < 0) {
             resultsBig.style.fontSize = smallFont;
             resultsBig.style.color = 'red';
@@ -173,6 +188,7 @@ function mathOperationsClick(e) {
         resultsBig.textContent = result;
     }
     if (e.target.classList.contains('square')) {
+        otherMathOperatorsClicked = true;
         let result = Math.pow((Number(resultsBig.textContent)), 2);
         if (result.toString().length > 9) {
             resultsBig.style.fontSize = smallFont
@@ -185,6 +201,7 @@ function mathOperationsClick(e) {
         resultsBig.textContent = result;
     }
     if (e.target.classList.contains('one-over')) {
+        otherMathOperatorsClicked = true;
         equalsHasBeenPressed = false;
         if (Number(resultsBig.textContent) == '0') {
             errorMessage();
@@ -203,7 +220,8 @@ function mathOperationsClick(e) {
     }
 }
 
-function concatOperators(operator, operationsContainer2) {
+function concatOperators(operator) {
+    //  console.log(operator);
     /**Checks if the display is empty when the operator buttons were pressed
      * If they are the if statement then changes the last operator in the small display
      * and replaces it with the new operator that was pressed
@@ -216,12 +234,17 @@ function concatOperators(operator, operationsContainer2) {
     }
     if (operator == 'x' || operator == '+' || operator == '-' || operator == '÷') {
         resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent + " " + operator;
+        console.log(resultsSmall.textContent);
         resultsBig.textContent = "0";
     }
-    operationsContainer2 = resultsSmall.textContent.split(' ');
 }
 
 function backspace(checkErrors) {
+    if (equalsHasBeenPressed) {
+        resultsBig.textContent = '0';
+        equalsHasBeenPressed = false;
+        return
+    }
     if (resultsBig.textContent.length == 1 || checkErrors) {
         resultsBig.textContent = '0';
         return
@@ -234,6 +257,11 @@ function backspace(checkErrors) {
 
 function dotOperator() {
     if (resultsBig.textContent.split('').includes('.')) return false;
+    if (otherMathOperatorsClicked) {
+        resultsBig.textContent = '0' + '.';
+        otherMathOperatorsClicked = false;
+        return
+    }
     if (equalsHasBeenPressed) { //If equals has been pressed and the user presses the dot operator then 0. shows on the display
         resultsBig.textContent = "0" + ".";
         equalsHasBeenPressed = false;
@@ -243,6 +271,7 @@ function dotOperator() {
 }
 
 function percent(compExp) {
+    otherMathOperatorsClicked = true;
     if (resultsBig.textContent == '0') {
         resultsBig.textContent = "0";
         return
@@ -272,6 +301,7 @@ function equalsButton() {
      * The fourth line in this method (apart from comments) adds the content in the display to the array.
      * The operationsContainer is first traversed to evaluate the expressions according to PEMDAS
      */
+    operationsContainer2 = resultsSmall.textContent.split(' ');
     operationsContainer2.splice(0, 1);
     operationsContainer2.push(resultsBig.textContent);
     resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent;
@@ -340,3 +370,26 @@ function checkFontSize() { //Checks at intervals to adjust the font-size if the 
 }
 
 window.addEventListener('keydown', mathOperationsKey);
+
+function multiPressed() {
+    window.addEventListener('keypress', function(e) {
+        if (e.keyCode in codeset) {
+            codeset[e.keyCode] = true;
+        }
+    })
+    window.addEventListener('keydown', function(e) {
+        if (e.keyCode in codeset) {
+            codeset[e.keyCode] = true;
+        }
+    })
+    if (codeset[16] && codeset[53]) {
+        mathOperationsKey(e.key);
+    }
+    if (codeset[16] && codeset[61]) {
+        mathOperationsKey(e.key);
+    }
+    if (codeset[16] && codeset[42]) {
+        mathOperationsKey(e.key);
+    }
+}
+multiPressed();
