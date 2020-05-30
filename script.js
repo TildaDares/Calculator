@@ -133,6 +133,7 @@ function mathOperationsClick(e) {
             return
         } else {
             resultsBig.textContent = e.target.textContent;
+            otherMathOperatorsClicked = false;
             return
         }
     }
