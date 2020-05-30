@@ -80,10 +80,10 @@ function mathOperationsKey(e) {
         e.preventDefault();
         backspace(checkErrors);
     }
-    nonMathButtons(e.key);
+    nonMathButtons(e.key, e);
 }
 
-function nonMathButtons(key) {
+function nonMathButtons(key, e) {
     if (key == 'Delete') {
         resultsBig.textContent = "0";
     }
@@ -95,6 +95,7 @@ function nonMathButtons(key) {
         dotOperator();
     }
     if (key == '=' || key == 'Enter') {
+        e.preventDefault();
         equalsButton();
     }
 }
