@@ -1,6 +1,5 @@
 /**Bugs to fix 
  * Round the numbers when they have too many trailing decimal numbers
- * Make the keydown event work even when there's no clicking inside the window
  */
 setInterval(checkFontSize, 5);
 const buttons = document.querySelectorAll('button');
@@ -42,8 +41,8 @@ function mathOperationsKey(e) {
         highlight.classList.add('button-active');
         setTimeout(function() { highlight.classList.remove('button-active'); }, 100);
     }
-    resultsBig.style.color = 'white';
     if (checkErrors) {
+        resultsBig.style.color = 'white';
         if (!numberKeys.includes(e.key)) {
             resultsBig.textContent = '0';
             resultsSmall.textContent = "";
@@ -59,7 +58,7 @@ function mathOperationsKey(e) {
         return
     }
     if (numberKeys.includes(e.key)) {
-        numbersButtons(e.key)
+        numbersButtons(e.key);
     }
     if (e.key == '+' || e.key == '*' || e.key == '/' || e.key == '-') {
         switch (e.key) {
@@ -81,7 +80,7 @@ function mathOperationsKey(e) {
         e.preventDefault();
         backspace(checkErrors);
     }
-    nonMathButtons(e.key)
+    nonMathButtons(e.key);
 }
 
 function nonMathButtons(key) {
@@ -305,10 +304,16 @@ function equalsButton() {
     resultsSmall.textContent = resultsSmall.textContent + " " + resultsBig.textContent;
     for (let i = 0; i < operationsContainer2.length; i++) { //This outer for loop makes sure no operator was skipped during the execution of the operations
         //Follows PEMDAS
-        if (operationsContainer2.includes('÷')) {
+        if (operationsContainer2.includes('÷') || operationsContainer2.includes('x')) {
             for (let i = 0; i < operationsContainer2.length; i++) {
-                if (operationsContainer2[i] == '÷') {
-                    const index = i;
+                const index = i;
+                if (operationsContainer2[i] == 'x') {
+                    let num1 = Number(operationsContainer2[index - 1]);
+                    let num2 = Number(operationsContainer2[index + 1]);
+                    let result1 = num1 * num2;
+                    operationsContainer2.splice(i - 1, 3, result1);
+                }
+                if (operationsContainer2[i] === '/') {
                     if (operationsContainer2[index + 1] === '0') { //Checks if a number is being divided by 0
                         errorMessage();
                         return
@@ -320,32 +325,17 @@ function equalsButton() {
                 }
             }
         }
-        if (operationsContainer2.includes('x')) {
+
+        if (operationsContainer2.includes('+') || operationsContainer2.includes('-')) {
             for (let i = 0; i < operationsContainer2.length; i++) {
-                if (operationsContainer2[i] === 'x') {
-                    const index = i;
-                    let num1 = Number(operationsContainer2[index - 1]);
-                    let num2 = Number(operationsContainer2[index + 1]);
-                    let result1 = num1 * num2;
-                    operationsContainer2.splice(i - 1, 3, result1);
-                }
-            }
-        }
-        if (operationsContainer2.includes('+')) {
-            for (let i = 0; i < operationsContainer2.length; i++) {
+                const index = i;
                 if (operationsContainer2[i] === '+') {
-                    const index = i;
                     let num1 = Number(operationsContainer2[index - 1]);
                     let num2 = Number(operationsContainer2[index + 1]);
                     let result1 = num1 + num2;
                     operationsContainer2.splice(i - 1, 3, result1);
                 }
-            }
-        }
-        if (operationsContainer2.includes('-')) {
-            for (let i = 0; i < operationsContainer2.length; i++) {
                 if (operationsContainer2[i] === '-') {
-                    const index = i;
                     let num1 = Number(operationsContainer2[index - 1]);
                     let num2 = Number(operationsContainer2[index + 1]);
                     let result1 = num1 - num2;
@@ -355,7 +345,7 @@ function equalsButton() {
         }
     }
     if (operationsContainer2.join('').length > 9) { //If the display length is greater than 6 then reduce the font-size of the display
-        resultsBig.style.fontSize = smallFont
+        resultsBig.style.fontSize = smallFont;
     }
     resultsBig.textContent = operationsContainer2.join('');
     resultsSmall.textContent = "";
