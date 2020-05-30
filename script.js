@@ -94,7 +94,7 @@ function nonMathButtons(key) {
     if (key == '.') {
         dotOperator();
     }
-    if (key == 'Enter' || key == '=') {
+    if (key == '=' || key == 'Enter') {
         equalsButton();
     }
 }
