@@ -49,6 +49,7 @@ function mathOperationsKey(e) {
             return
         } else {
             resultsBig.textContent = e.key;
+            equalsHasBeenPressed = false;
             otherMathOperatorsClicked = false;
             return
         }
@@ -63,6 +64,7 @@ function mathOperationsKey(e) {
     if (e.key == '+' || e.key == '*' || e.key == '/' || e.key == '-') {
         switch (e.key) {
             case '/':
+                e.preventDefault();
                 operator = '÷';
                 break;
 
@@ -315,7 +317,7 @@ function equalsButton() {
                     let result1 = num1 * num2;
                     operationsContainer2.splice(i - 1, 3, result1);
                 }
-                if (operationsContainer2[i] === '/') {
+                if (operationsContainer2[i] === '÷') {
                     if (operationsContainer2[index + 1] === '0') { //Checks if a number is being divided by 0
                         errorMessage();
                         return
